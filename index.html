@@ -10,8 +10,6 @@
         --scale2: 1;
         --glow: 1;
       }
-
-      /* Register animatable custom props */
       @property --scale1 {
         syntax: "<number>";
         inherits: false;
@@ -33,7 +31,6 @@
         height: 100%;
         margin: 0;
         background: #000;
-        color-scheme: dark;
       }
       body {
         display: grid;
@@ -45,7 +42,6 @@
         width: 16vmin;
         height: 16vmin;
         border-radius: 50%;
-        /* warm core */
         background: radial-gradient(
           circle at 50% 45%,
           #ffeac6 0%,
@@ -54,7 +50,6 @@
           rgba(255, 140, 0, 0.18) 72%,
           rgba(0, 0, 0, 0) 80%
         );
-        /* deep glow */
         box-shadow: 0 0 calc(7vmin * var(--glow)) rgba(255, 190, 120, 0.65),
           0 0 calc(14vmin * var(--glow)) rgba(255, 165, 80, 0.35),
           0 0 calc(24vmin * var(--glow)) rgba(255, 120, 40, 0.18);
@@ -65,10 +60,7 @@
           luminosity 13s ease-in-out infinite alternate;
         filter: blur(0.15vmin);
         position: relative;
-        isolation: isolate;
       }
-
-      /* soft halo */
       .candle::before {
         content: "";
         position: absolute;
@@ -80,10 +72,7 @@
           rgba(0, 0, 0, 0) 70%
         );
         animation: halo 17s ease-in-out infinite alternate;
-        pointer-events: none;
       }
-
-      /* subtle flicker layer */
       .candle::after {
         content: "";
         position: absolute;
@@ -95,11 +84,9 @@
           rgba(0, 0, 0, 0) 60%
         );
         mix-blend-mode: screen;
-        animation: flicker 0.145s steps(2, jump-none) infinite;
-        pointer-events: none;
+        animation: flicker 0.145s steps(2) infinite;
       }
 
-      /* Irregular, pseudo-random “breathing” — two incommensurate cycles */
       @keyframes breathe1 {
         0% {
           --scale1: 0.94;
@@ -143,8 +130,6 @@
           --scale2: 1.02;
         }
       }
-
-      /* Glow strength drifts */
       @keyframes luminosity {
         0% {
           --glow: 0.9;
@@ -167,8 +152,6 @@
           filter: blur(0.13vmin);
         }
       }
-
-      /* Wide halo breath */
       @keyframes halo {
         0% {
           opacity: 0.22;
@@ -187,8 +170,6 @@
           transform: scale(1.02);
         }
       }
-
-      /* tiny high-frequency flutter (feels like a live flame) */
       @keyframes flicker {
         0% {
           transform: translate(0.05vmin, -0.03vmin) scale(1.002);
@@ -204,20 +185,82 @@
         }
       }
 
-      /* Motion accessibility */
-      @media (prefers-reduced-motion: reduce) {
-        .candle,
-        .candle::before,
-        .candle::after {
-          animation: none !important;
-        }
-        .candle {
-          transform: scale(1);
-        }
+      button {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.5rem 1rem;
+        border-radius: 0.3rem;
+        cursor: pointer;
+        backdrop-filter: blur(4px);
+      }
+      button:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      /* Hide button + cursor in fullscreen (with WebKit fallback) */
+      :fullscreen {
+        cursor: none;
+      }
+      :fullscreen #fs-btn {
+        display: none !important;
+      }
+      :-webkit-full-screen {
+        cursor: none;
+      }
+      :-webkit-full-screen #fs-btn {
+        display: none !important;
       }
     </style>
   </head>
   <body>
     <div class="candle" aria-label="Virtual candle for meditation"></div>
+    <button id="fs-btn">Fullscreen</button>
+
+    <script>
+      const fsBtn = document.getElementById("fs-btn");
+
+      function isFullscreen() {
+        return !!(
+          document.fullscreenElement || document.webkitFullscreenElement
+        );
+      }
+      function enterFullscreen() {
+        const el = document.documentElement;
+        if (el.requestFullscreen) return el.requestFullscreen();
+        if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+      }
+      function exitFullscreen() {
+        if (document.exitFullscreen) return document.exitFullscreen();
+        if (document.webkitExitFullscreen)
+          return document.webkitExitFullscreen();
+      }
+      function toggleFullscreen() {
+        if (isFullscreen()) {
+          exitFullscreen();
+        } else {
+          enterFullscreen();
+        }
+      }
+
+      fsBtn.addEventListener("click", toggleFullscreen);
+      document.addEventListener("keydown", (e) => {
+        if (e.key && e.key.toLowerCase() === "f") {
+          e.preventDefault();
+          toggleFullscreen();
+        }
+      });
+
+      // Extra safety: hide/show via JS too (for browsers without :fullscreen)
+      function syncButton() {
+        fsBtn.style.display = isFullscreen() ? "none" : "";
+      }
+      document.addEventListener("fullscreenchange", syncButton);
+      document.addEventListener("webkitfullscreenchange", syncButton);
+      syncButton();
+    </script>
   </body>
 </html>
