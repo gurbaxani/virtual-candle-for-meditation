@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Meditate</title>
+    <style>
+      :root {
+        --scale1: 1;
+        --scale2: 1;
+        --glow: 1;
+      }
+
+      /* Register animatable custom props */
+      @property --scale1 {
+        syntax: "<number>";
+        inherits: false;
+        initial-value: 1;
+      }
+      @property --scale2 {
+        syntax: "<number>";
+        inherits: false;
+        initial-value: 1;
+      }
+      @property --glow {
+        syntax: "<number>";
+        inherits: false;
+        initial-value: 1;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: #000;
+        color-scheme: dark;
+      }
+      body {
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+
+      .candle {
+        width: 16vmin;
+        height: 16vmin;
+        border-radius: 50%;
+        /* warm core */
+        background: radial-gradient(
+          circle at 50% 45%,
+          #ffeac6 0%,
+          #ffd08a 32%,
+          #ffad33 55%,
+          rgba(255, 140, 0, 0.18) 72%,
+          rgba(0, 0, 0, 0) 80%
+        );
+        /* deep glow */
+        box-shadow: 0 0 calc(7vmin * var(--glow)) rgba(255, 190, 120, 0.65),
+          0 0 calc(14vmin * var(--glow)) rgba(255, 165, 80, 0.35),
+          0 0 calc(24vmin * var(--glow)) rgba(255, 120, 40, 0.18);
+        transform: scale(calc(var(--scale1) * var(--scale2)));
+        will-change: transform, box-shadow, filter;
+        animation: breathe1 7.3s ease-in-out infinite alternate,
+          breathe2 11s ease-in-out infinite alternate,
+          luminosity 13s ease-in-out infinite alternate;
+        filter: blur(0.15vmin);
+        position: relative;
+        isolation: isolate;
+      }
+
+      /* soft halo */
+      .candle::before {
+        content: "";
+        position: absolute;
+        inset: -15vmin;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 180, 90, 0.15),
+          rgba(0, 0, 0, 0) 70%
+        );
+        animation: halo 17s ease-in-out infinite alternate;
+        pointer-events: none;
+      }
+
+      /* subtle flicker layer */
+      .candle::after {
+        content: "";
+        position: absolute;
+        inset: -2vmin;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 52% 42%,
+          rgba(255, 255, 255, 0.04),
+          rgba(0, 0, 0, 0) 60%
+        );
+        mix-blend-mode: screen;
+        animation: flicker 0.145s steps(2, jump-none) infinite;
+        pointer-events: none;
+      }
+
+      /* Irregular, pseudo-random “breathing” — two incommensurate cycles */
+      @keyframes breathe1 {
+        0% {
+          --scale1: 0.94;
+        }
+        17% {
+          --scale1: 0.98;
+        }
+        33% {
+          --scale1: 1.06;
+        }
+        49% {
+          --scale1: 1;
+        }
+        67% {
+          --scale1: 1.08;
+        }
+        83% {
+          --scale1: 0.96;
+        }
+        100% {
+          --scale1: 1.04;
+        }
+      }
+      @keyframes breathe2 {
+        0% {
+          --scale2: 0.96;
+        }
+        21% {
+          --scale2: 1.05;
+        }
+        38% {
+          --scale2: 0.99;
+        }
+        57% {
+          --scale2: 1.07;
+        }
+        74% {
+          --scale2: 0.95;
+        }
+        100% {
+          --scale2: 1.02;
+        }
+      }
+
+      /* Glow strength drifts */
+      @keyframes luminosity {
+        0% {
+          --glow: 0.9;
+          filter: blur(0.12vmin);
+        }
+        23% {
+          --glow: 1.15;
+          filter: blur(0.18vmin);
+        }
+        47% {
+          --glow: 1;
+          filter: blur(0.14vmin);
+        }
+        71% {
+          --glow: 1.25;
+          filter: blur(0.22vmin);
+        }
+        100% {
+          --glow: 0.95;
+          filter: blur(0.13vmin);
+        }
+      }
+
+      /* Wide halo breath */
+      @keyframes halo {
+        0% {
+          opacity: 0.22;
+          transform: scale(1);
+        }
+        40% {
+          opacity: 0.32;
+          transform: scale(1.04);
+        }
+        70% {
+          opacity: 0.18;
+          transform: scale(1.08);
+        }
+        100% {
+          opacity: 0.28;
+          transform: scale(1.02);
+        }
+      }
+
+      /* tiny high-frequency flutter (feels like a live flame) */
+      @keyframes flicker {
+        0% {
+          transform: translate(0.05vmin, -0.03vmin) scale(1.002);
+          opacity: 0.75;
+        }
+        50% {
+          transform: translate(-0.04vmin, 0.02vmin) scale(0.998);
+          opacity: 0.6;
+        }
+        100% {
+          transform: translate(0.03vmin, 0.01vmin) scale(1.001);
+          opacity: 0.74;
+        }
+      }
+
+      /* Motion accessibility */
+      @media (prefers-reduced-motion: reduce) {
+        .candle,
+        .candle::before,
+        .candle::after {
+          animation: none !important;
+        }
+        .candle {
+          transform: scale(1);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="candle" aria-label="Virtual candle for meditation"></div>
+  </body>
+</html>
